@@ -4,63 +4,59 @@ function love.load()
     RECT_X, RECT_Y, RECT_W, RECT_H = 20, 20, 20, 20;
     CURSOR_X, CURSOR_Y = 0, 0
     DELTA_X, DELTA_Y = 0, 0
-    ARRAY = {}
-    SPEED = 0
-    MS_DELTA = 0
+    Asset = love.graphics.newImage('test.png')
+    FRICTION_COEFF = 0.25
+    -- love.window.setFullscreen(true)
+    OBJ = {
+        x_pos = 0,
+        y_pos = 0,
+        x_speed = 0,
+        y_speed = 0,
+        angle = 0,
+
+    };
+    love.graphics.setBackgroundColor(1,1,1)
+end
+
+function love.keypressed(key)
+    if key == 'q' then
+        love.window.close()
+    end
 end
 
 function love.update(dt)
-    for i, dot in ipairs(ARRAY) do
-        dot[3] = dot[3] + 9.8 * dt
-        dot[2] = dot[2] + dot[3] * dt
-        if dot[2] > love.graphics.getHeight() then
-            table.remove(ARRAY, i)
-            -- ARRAY.remove(i)
-        end
+    local x, y = love.mouse.getPosition()
+    local dx, dy = x - OBJ.x_pos , y - OBJ.y_pos
+    OBJ.y_speed = dy * 3
+    OBJ.x_speed = dx  * 3
+    OBJ.angle = math.atan(OBJ.y_speed / OBJ.x_speed )
+    if (OBJ.x_speed < 0) then
+        OBJ.angle = OBJ.angle + math.pi
     end
-    SPEED = SPEED + 9.8 * dt
-    RECT_Y = RECT_Y + SPEED * dt
-    MS_DELTA = dt
+    OBJ.x_pos = OBJ.x_pos + OBJ.x_speed * dt
+    OBJ.y_pos = OBJ.y_pos + OBJ.y_speed * dt
 end
 
-function love.mousepressed(x, y, button)
-    local insertedArray = {x, y, 0}
-    ARRAY[#ARRAY + 1] = insertedArray
-end
 
-function love.mousemoved(x, y, dx, dy, isTouch)
-    if isTouch then
-        RECT_W = dx
-        RECT_H = dy
-    end
-    RECT_W, RECT_H = RECT_W + dx, RECT_H + dy
+function love.mousemoved(x, y, _, _, _)
     RECT_X, CURSOR_X = x, x
     RECT_Y, CURSOR_Y = y, y
-    DELTA_X, DELTA_Y = dx, dy
 end
 
 
-local function arrayToString(array)
-    local str = ""
-    for i, dot in ipairs(array) do
-        str = str .. dot[1] .. "x" .. dot[2] .. ";\n"
-    end
-    str = str .. tostring(#ARRAY)
-    return str
-end
 
 function love.draw()
-    love.graphics.setColor(1, 0.4, 0.4)
-    love.graphics.print(CURSOR_X, 200, 300)
-    love.graphics.print(CURSOR_Y, 300, 300)
-    love.graphics.print(DELTA_X, 200, 400)
-    love.graphics.print(DELTA_Y, 300, 400)
-    love.graphics.print(MS_DELTA, 200, 500)
-    for i, arr in ipairs(ARRAY) do
-        love.graphics.rectangle("fill", arr[1], arr[2], 5, 5)
-    end
-    love.graphics.setColor(0, 0.4, 0.4)
-    love.graphics.print(arrayToString(ARRAY), 200, 0)
+    -- love.graphics.setColor(1, 0.4, 0.4)
+    -- love.graphics.print(CURSOR_X, 200, 300)
+    -- love.graphics.print(CURSOR_Y, 300, 300)
+    -- love.graphics.print(DELTA_X, 200, 400)
+    -- love.graphics.print(DELTA_Y, 300, 400)
+    -- love.graphics.print(MS_DELTA, 200, 500)
+    -- love.graphics.setColor(0, 0.4, 0.4)
+    -- love.graphics.print(arrayToString(ARRAY), 200, 0)
     -- love.graphics.rectangle("fill", RECT_X, RECT_Y, RECT_W, RECT_H)
+
+    -- local angle = love.timer.getTime() * 2* math.pi / 2.5
+    love.graphics.draw(Asset, OBJ.x_pos, OBJ.y_pos, OBJ.angle - math.pi / 2,1,1,25/2,25/2)
 end
 
