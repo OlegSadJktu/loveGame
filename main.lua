@@ -1,5 +1,6 @@
 require("love")
 require("math.vector")
+require("garbage_collector")
 
 local directions = {
     w = vector:new(0, -1),
@@ -17,27 +18,30 @@ function MAIN_CHAR:new()
     obj.X, obj.Y = 0, 0
     obj.fireRate = 3
     obj.lastFire = 0
-    obj.speed = 0
-    obj.maxSpeed = 300
+    obj.maxSpeed = 900
     obj.direction = vector:new(0, 0)
-    obj.deceleration = 600
+    obj.deceleration = 1500
+    obj.acceleration = 400
     return obj
 end
 function MAIN_CHAR:update()
     local dt = love.timer.getDelta()
-    local isPressed = false
+    local forceVector = vector:new(0,0)
     for direction, vector in pairs(directions) do
         if love.keyboard.isDown(direction) then
-            self.direction = vector:mul(self.maxSpeed):normalize()
-            self.speed = self.maxSpeed
-            isPressed = true
+            forceVector = forceVector:add(vector)
         end
     end
-    if not isPressed then
-        self.speed = math.max(0, self.speed - self.deceleration * dt)
+        self.direction = self.direction:subLength(self.direction:length() * 0.9 * dt)
+    if not forceVector:isZero() then
+        local newDir = self.direction:add(forceVector:normalize():mul(self.acceleration* dt))
+        -- if newDir:length() > self.maxSpeed then
+        --     newDir = newDir:withLength(self.maxSpeed)
+        -- end
+        self.direction = newDir
     end
-    self.X = self.X + self.direction.X * self.speed * dt
-    self.Y = self.Y + self.direction.Y * self.speed * dt
+    self.X = self.X + self.direction.X * dt
+    self.Y = self.Y + self.direction.Y * dt
 
     local range = 1 / self.fireRate
     local x, y = love.mouse.getPosition()
@@ -127,8 +131,9 @@ function love.draw()
     love.graphics.print("Cursor Y: " .. CURSOR_Y, 0, 10)
     love.graphics.print("Delta X: " .. DELTA_X, 0, 20)
     love.graphics.print("Delta Y: " .. DELTA_Y, 0, 30)
-    love.graphics.print("getPosition: " .. MC.X .. " " .. MC.Y, 0, 40)
-    love.graphics.print("speed: " .. MC.speed, 0, 50)
+    love.graphics.print("getPosition: " .. string.format("%0.2f %0.2f",  MC.X , MC.Y), 0, 40)
+    love.graphics.print("speed: " .. string.format("%0.2f %0.2f", MC.direction.X, MC.direction.Y), 0 ,50)
+    love.graphics.print("projectiles: ".. #PROJECTILES, 0 ,60)
     -- for _, arr in ipairs(ARRAY) do
     --     local angle = (love.timer.getTime() - arr[4]) * 2 * math.pi / 2.5
     --     love.graphics.draw(ImageData,  arr[1], arr[2], angle, 1, 1, 25 / 2, 25 / 2)
