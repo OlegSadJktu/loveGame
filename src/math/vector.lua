@@ -1,7 +1,9 @@
-package.path = package.path .. ";../?.lua"
-
 ---@class vector
-vector = {}
+---@field X number
+---@field Y number
+local vector = {}
+
+---@return vector
 function vector:new(x, y)
     local obj = {}
     setmetatable(obj, self)
