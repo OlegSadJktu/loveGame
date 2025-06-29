@@ -20,6 +20,7 @@ module = {
 ]=]
 
 Text"local LG        = love.graphics\n"
+Text"---@type {x: number, y: number, [number]: {system: love.ParticleSystem, kickStartSteps: number, kickStartDt: number, emitAtStart: number, blendMode: string, shader: love.Shader, texturePath: string, texturePreset: string, shaderPath: string, shaderFilename: string, x: number, y: number}}\n"
 Text"local particles = {x=" Lua(exported.emitterPosition.x) Text", y=" Lua(exported.emitterPosition.y) Text"}\n"
 Text"\n"
 

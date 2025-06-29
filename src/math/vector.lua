@@ -40,6 +40,13 @@ end
 function vector:length()
     return math.sqrt(self.X*self.X + self.Y*self.Y)
 end
+function vector:trim(length)
+    local currentLength = self:length()
+    if currentLength <= length then
+        return self
+    end
+    return self:withLength(length)
+end
 function vector:withLength(length)
     if length < 0 then
         return vector:new(0, 0)
@@ -52,6 +59,8 @@ function vector:withLength(length)
     local ratio = length / selfLength
     return vector:new(self.X * ratio, self.Y * ratio)
 end
-
+function vector:toAngle()
+    return math.atan2(self.Y, self.X)
+end
 
 return vector

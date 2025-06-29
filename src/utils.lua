@@ -29,4 +29,17 @@ function utils.serializeTable(val, name, skipnewlines, depth)
     return tmp
 end
 
+function utils.getFields(t)
+    local fields = {}
+    for k, _ in pairs(t) do
+        table.insert(fields, k)
+    end
+    return fields
+end
+
+function utils.getFieldsString(t)
+    local fields = utils.getFields(t)
+    return table.concat(fields, ", ")
+end
+
 return utils

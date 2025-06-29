@@ -1,3 +1,4 @@
+---@class Gamera
 local gamera = {}
 
 -- Private attributes and methods
@@ -65,7 +66,8 @@ end
 
 -- Public interface
 
-function gamera.new(l,t,w,h)
+---@return Gamera
+function gamera.new(l,t,w,h, minScale, maxScale)
 
   local sw,sh = love.graphics.getWidth(), love.graphics.getHeight()
 
@@ -73,11 +75,12 @@ function gamera.new(l,t,w,h)
     x=0, y=0,
     scale=1,
     angle=0, sin=math.sin(0), cos=math.cos(0),
+    minScale = minScale or 0.4,
+    maxScale = maxScale or 100,
     l=0, t=0, w=sw, h=sh, w2=sw*0.5, h2=sh*0.5
   }, gameraMt)
 
   cam:setWorld(l,t,w,h)
-
   return cam
 end
 
@@ -109,7 +112,7 @@ end
 function gamera:setScale(scale)
   checkNumber(scale, "scale")
 
-  self.scale = scale
+  self.scale = math.max(math.min(scale, self.maxScale), self.minScale)
 
   adjustScale(self)
   adjustPosition(self)

@@ -1,11 +1,15 @@
----@class projectlies
+local vector = require("src.math.vector")
+
+---@class Projectlies
 ---@field p projectile[]
-local projectlies = {}
+local projectlies = {
+}
 
 
----@return projectlies
+
+---@return Projectlies
 function projectlies.new()
-    local projectiles = setmetatable({}, {__index = projectlies})
+    local projectiles = setmetatable({}, { __index = projectlies })
     projectiles.p = {}
     return projectiles
 end
@@ -15,6 +19,7 @@ function projectlies:update(dt)
         if projectile.lifeTime > 0 then
             projectile:update(dt)
         else
+            projectile:destroy()
             table.remove(self.p, i)
         end
     end
@@ -26,37 +31,70 @@ function projectlies:draw()
     end
 end
 
+---@param event event
+function projectlies:receive(event)
+    if event.type == "hit" then
+        for i, projectile in ipairs(self.p) do
+            if projectile == event.data then
+                table.remove(self.p, i)
+                projectile:destroy()
+            end
+        end
+    end
+end
+
 ---@class projectile
----@field pos vector
----@field direction vector
 ---@field speed number
 ---@field tail number
 ---@field lifeTime number
-local projectile = {}
+---@field body love.Body
+---@field hitbox love.CircleShape
+---@field fixture love.Fixture
+---@field type string
+local projectile = {
+    type = "projectile"
+}
 
-function projectlies:add(pos, direction)
-    table.insert(self.p, projectile.new(pos, direction))
+---@param world World
+---@param pos vector
+---@param direction vector
+function projectlies:add(world, pos, direction)
+    table.insert(self.p, projectile.new(world, pos, direction))
 end
 
-
-function projectile.new(pos, direction)
+---@param world World
+---@param pos vector
+---@param direction vector
+function projectile.new(world, pos, direction)
     local obj = {}
-    setmetatable(obj, {__index = projectile})
-    obj.pos = pos
-    obj.direction = direction
-    obj.speed = 300
+    setmetatable(obj, { __index = projectile })
+    obj.body = love.physics.newBody(world.physics, pos.X, pos.Y, "dynamic")
+    obj.body:setMass(0.5)
+    obj.hitbox = love.physics.newCircleShape(6)
+    obj.fixture = love.physics.newFixture(obj.body, obj.hitbox)
+    obj.fixture:setUserData(obj)
+    obj.speed = 1500
+    obj.body:setLinearVelocity(direction.X * obj.speed, direction.Y * obj.speed)
+    obj.body:setLinearDamping(1)
+    obj.body:setBullet(true)
     obj.tail = 20
-    obj.lifeTime = 1
+    obj.lifeTime = 6
     return obj
 end
+
 function projectile:draw()
-    local tail = self.direction:negative():mul(self.tail)
-    love.graphics.line(self.pos.X, self.pos.Y, self.pos.X + tail.X, self.pos.Y + tail.Y)
-end
-function projectile:update(dt)
-    self.lifeTime = self.lifeTime - dt
-    self.pos.X = self.pos.X + self.direction.X * dt * self.speed
-    self.pos.Y = self.pos.Y + self.direction.Y * dt * self.speed
+    local x, y = self.body:getPosition()
+    local tailVector = vector:new(self.body:getLinearVelocity()):mul(0.05):trim(self.tail)
+    local tailX, tailY = tailVector.X, tailVector.Y
+    love.graphics.line(x, y, x - tailX, y - tailY)
 end
 
-return projectlies
+function projectile:update(dt)
+    self.lifeTime = self.lifeTime - dt
+end
+
+function projectile:destroy()
+    self.body:destroy()
+end
+
+return { projectlies, projectile }
